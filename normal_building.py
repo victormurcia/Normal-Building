@@ -112,6 +112,17 @@ def fit_gaussian_to_contour(contours):
 
     return fig, parameters, chi_squared_per_dof  # Return the figure object for display in Streamlit
 
+# Function to load an image from a URL
+def load_image_from_url(image_url):
+    response = requests.get(image_url)
+    img = Image.open(BytesIO(response.content))
+    img = np.array(img)  # Convert PIL image to numpy array
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)  # Convert to BGR (OpenCV format) if needed
+    return img
+
+# The raw URL of the default image hosted on GitHub
+default_image_url = 'https://github.com/victormurcia/Normal-Building/blob/main/building.jpg'
+
 st.set_page_config(layout="centered")
 st.title('Is this Building Normal?')
 
@@ -129,7 +140,7 @@ if uploaded_file is not None:
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     image = cv2.imdecode(file_bytes, 1)
 else:
-    image = load_image(default_image_path)
+    image = load_image_from_url(default_image_url
     
 st.sidebar.header('Image Processing Parameters')
 
