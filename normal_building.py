@@ -1,10 +1,12 @@
-
 import streamlit as st
 import cv2
 import numpy as np
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 import pandas as pd
+import requests
+from io import BytesIO
+from PIL import Image
 
 def process_image(image, min_val, max_val, mode, method, kernel_size):
     # Ensure kernel size is odd
