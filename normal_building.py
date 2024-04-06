@@ -1,4 +1,3 @@
-
 import streamlit as st
 import cv2
 import numpy as np
@@ -235,6 +234,8 @@ st.session_state.fit_results_df = pd.concat([st.session_state.fit_results_df, ne
 
 csv = convert_df_to_csv(st.session_state.fit_results_df)
 
+st.dataframe(st.session_state.fit_results_df)
+
 # Create the download button
 st.download_button(
     label="Download Results as CSV",
@@ -242,5 +243,3 @@ st.download_button(
     file_name='fit_results.csv',
     mime='text/csv',
 )
-
-st.dataframe(st.session_state.fit_results_df)
