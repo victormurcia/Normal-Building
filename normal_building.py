@@ -1,3 +1,4 @@
+
 import streamlit as st
 import cv2
 import numpy as np
@@ -117,10 +118,13 @@ def fit_gaussian_to_contour(contours):
 # Function to load an image from a URL
 def load_image_from_url(image_url):
     response = requests.get(image_url)
-    img = Image.open(BytesIO(response.content))
-    img = np.array(img)  # Convert PIL image to numpy array
-    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)  # Convert to BGR (OpenCV format) if needed
-    return img
+    if response.status_code == 200:  # Check if the request was successful
+        img = Image.open(BytesIO(response.content))
+        img = np.array(img)  # Convert PIL image to numpy array
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)  # Convert to BGR for OpenCV
+        return img
+    else:
+        raise Exception("Failed to retrieve the image. HTTP Status Code: {}".format(response.status_code))
 
 # The raw URL of the default image hosted on GitHub
 default_image_url = 'https://github.com/victormurcia/Normal-Building/blob/main/building.jpg'
@@ -169,10 +173,7 @@ if uploaded_file is not None:
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     image = cv2.imdecode(file_bytes, 1)
 else:
-    # Convert the uploaded file to an OpenCV image
-    im_path = 'normal_building.py'
-    file_bytes = np.asarray(bytearray(im_path.read()), dtype=np.uint8)
-    image = cv2.imdecode(file_bytes, 1)
+    image = load_image_from_url(default_image_url) 
                                 
 # Process the image immediately after any input changes
 original_rgb, gray, blurred, edges, contours_rgb, contours = process_image(image, min_val, max_val, mode, method, kernel_size)
