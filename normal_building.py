@@ -134,13 +134,6 @@ st.write(
     """
 )
 uploaded_file = st.sidebar.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
-
-if uploaded_file is not None:
-    # Convert the uploaded file to an OpenCV image
-    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-    image = cv2.imdecode(file_bytes, 1)
-else:
-    image = load_image_from_url(default_image_url
     
 st.sidebar.header('Image Processing Parameters')
 
@@ -168,6 +161,14 @@ method = st.sidebar.selectbox('Contour Approximation Method:',
     ['CHAIN_APPROX_NONE', 'CHAIN_APPROX_SIMPLE', 'CHAIN_APPROX_TC89_L1', 'CHAIN_APPROX_TC89_KCOS'], index=1, key='method',
     help='Determines the contour approximation method. "CHAIN_APPROX_SIMPLE" compresses horizontal, vertical, and diagonal segments.'
 )
+
+if uploaded_file is not None:
+    # Convert the uploaded file to an OpenCV image
+    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+    image = cv2.imdecode(file_bytes, 1)
+else:
+    image = load_image_from_url(default_image_url)
+                                
 # Process the image immediately after any input changes
 original_rgb, gray, blurred, edges, contours_rgb, contours = process_image(image, min_val, max_val, mode, method, kernel_size)
 
