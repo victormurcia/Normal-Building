@@ -127,7 +127,7 @@ def load_image_from_url(image_url):
         raise Exception("Failed to retrieve the image. HTTP Status Code: {}".format(response.status_code))
 
 # The raw URL of the default image hosted on GitHub
-default_image_url = 'https://github.com/victormurcia/Normal-Building/blob/main/building.jpg'
+default_image_url = 'https://github.com/victormurcia/Normal-Building/blob/ad7b6c3749df9691786085d7cacc1304a4247c3d/building.jpg'
 
 st.set_page_config(layout="centered")
 st.title('Is this Building Normal?')
