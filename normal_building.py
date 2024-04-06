@@ -128,86 +128,87 @@ if uploaded_file is not None:
     # Convert the uploaded file to an OpenCV image
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     image = cv2.imdecode(file_bytes, 1)
+else:
+    image = load_image(default_image_path)
     
-    st.sidebar.header('Image Processing Parameters')
+st.sidebar.header('Image Processing Parameters')
 
-    min_val = st.sidebar.slider(
-        'Min Threshold:', min_value=0, max_value=255, value=255, key='min_val',
-        help='Minimum threshold for Canny edge detection. Increase to detect stronger edges.'
-    )
-    
-    max_val = st.sidebar.slider(
-        'Max Threshold:', min_value=0, max_value=255, value=109, key='max_val',
-        help='Maximum threshold for Canny edge detection. Decrease to include softer edges.'
-    )
-    
-    kernel_size = st.sidebar.slider(
-        'Kernel Size:', min_value=0, max_value=10, value=3, key='kernel_size',
-        help='Size of the Gaussian kernel used for blurring. Increase to smooth over more noise.'
-    )
-    
-    mode = st.sidebar.selectbox('Contour Retrieval Mode:',
-        ['RETR_EXTERNAL', 'RETR_LIST', 'RETR_CCOMP', 'RETR_TREE'], index=0, key='mode',
-        help='Defines the contour retrieval approach. "RETR_EXTERNAL" retrieves only extreme outer contours.'
-    )
-    
-    method = st.sidebar.selectbox('Contour Approximation Method:',
-        ['CHAIN_APPROX_NONE', 'CHAIN_APPROX_SIMPLE', 'CHAIN_APPROX_TC89_L1', 'CHAIN_APPROX_TC89_KCOS'], index=1, key='method',
-        help='Determines the contour approximation method. "CHAIN_APPROX_SIMPLE" compresses horizontal, vertical, and diagonal segments.'
-    )
-    # Process the image immediately after any input changes
-    original_rgb, gray, blurred, edges, contours_rgb, contours = process_image(image, min_val, max_val, mode, method, kernel_size)
+min_val = st.sidebar.slider(
+    'Min Threshold:', min_value=0, max_value=255, value=255, key='min_val',
+    help='Minimum threshold for Canny edge detection. Increase to detect stronger edges.'
+)
 
-    # Display the images side by side using columns
-    cols = st.columns(5)  # Create five columns for the five images
-    with cols[0]:
-        st.image(original_rgb, caption='Original Image', use_column_width=True)
-    with cols[1]:
-        st.image(cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB), caption='Grayscale', use_column_width=True)
-    with cols[2]:
-        st.image(cv2.cvtColor(blurred, cv2.COLOR_GRAY2RGB), caption='Blurred', use_column_width=True)
-    with cols[3]:
-        st.image(cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB), caption='Edges', use_column_width=True)
-    with cols[4]:
-        st.image(contours_rgb, caption='Contours', use_column_width=True)
+max_val = st.sidebar.slider(
+    'Max Threshold:', min_value=0, max_value=255, value=109, key='max_val',
+    help='Maximum threshold for Canny edge detection. Decrease to include softer edges.'
+)
+
+kernel_size = st.sidebar.slider(
+    'Kernel Size:', min_value=0, max_value=10, value=3, key='kernel_size',
+    help='Size of the Gaussian kernel used for blurring. Increase to smooth over more noise.'
+)
+
+mode = st.sidebar.selectbox('Contour Retrieval Mode:',
+    ['RETR_EXTERNAL', 'RETR_LIST', 'RETR_CCOMP', 'RETR_TREE'], index=0, key='mode',
+    help='Defines the contour retrieval approach. "RETR_EXTERNAL" retrieves only extreme outer contours.'
+)
+
+method = st.sidebar.selectbox('Contour Approximation Method:',
+    ['CHAIN_APPROX_NONE', 'CHAIN_APPROX_SIMPLE', 'CHAIN_APPROX_TC89_L1', 'CHAIN_APPROX_TC89_KCOS'], index=1, key='method',
+    help='Determines the contour approximation method. "CHAIN_APPROX_SIMPLE" compresses horizontal, vertical, and diagonal segments.'
+)
+# Process the image immediately after any input changes
+original_rgb, gray, blurred, edges, contours_rgb, contours = process_image(image, min_val, max_val, mode, method, kernel_size)
+
+# Display the images side by side using columns
+cols = st.columns(5)  # Create five columns for the five images
+with cols[0]:
+    st.image(original_rgb, caption='Original Image', use_column_width=True)
+with cols[1]:
+    st.image(cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB), caption='Grayscale', use_column_width=True)
+with cols[2]:
+    st.image(cv2.cvtColor(blurred, cv2.COLOR_GRAY2RGB), caption='Blurred', use_column_width=True)
+with cols[3]:
+    st.image(cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB), caption='Edges', use_column_width=True)
+with cols[4]:
+    st.image(contours_rgb, caption='Contours', use_column_width=True)
+
+fig, parameters, chi_squared_per_dof = fit_gaussian_to_contour(contours)
+st.pyplot(fig)
+
+# Append the new fit results to the DataFrame
+new_row = {
+    'H': parameters[0],
+    'A': parameters[1],
+    'x0': parameters[2],
+    'sigma': parameters[3],
+    'Reduced Chi-squared': chi_squared_per_dof
+}
+
+# Initialize the DataFrame in session state if it does not already exist
+if 'fit_results_df' not in st.session_state:
+    st.session_state.fit_results_df = pd.DataFrame(columns=[
+        'H', 'A', 'x0', 'sigma', 'Reduced Chi-squared',
+        'min_val', 'max_val', 'kernel_size', 'mode', 'method'
+    ])
     
-    fig, parameters, chi_squared_per_dof = fit_gaussian_to_contour(contours)
-    st.pyplot(fig)
-    
-    # Append the new fit results to the DataFrame
-    new_row = {
-        'H': parameters[0],
-        'A': parameters[1],
-        'x0': parameters[2],
-        'sigma': parameters[3],
-        'Reduced Chi-squared': chi_squared_per_dof
-    }
-    
-    # Initialize the DataFrame in session state if it does not already exist
-    if 'fit_results_df' not in st.session_state:
-        st.session_state.fit_results_df = pd.DataFrame(columns=[
-            'H', 'A', 'x0', 'sigma', 'Reduced Chi-squared',
-            'min_val', 'max_val', 'kernel_size', 'mode', 'method'
-        ])
-        
-    # Updating the new_row dictionary to include both sets of parameters
-    new_row = {
-        'H': parameters[0],
-        'A': parameters[1],
-        'x0': parameters[2],
-        'sigma': parameters[3],
-        'Reduced Chi-squared': chi_squared_per_dof,
-        'min_val': min_val,
-        'max_val': max_val,
-        'kernel_size': kernel_size,
-        'mode': mode,
-        'method': method,
-    }
-    
-    new_row_df = pd.DataFrame([new_row])
-    
-    # Use concat to add the new row to the DataFrame
-    st.session_state.fit_results_df = pd.concat([st.session_state.fit_results_df, new_row_df], ignore_index=True)
-    
-    st.dataframe(st.session_state.fit_results_df)
-    
+# Updating the new_row dictionary to include both sets of parameters
+new_row = {
+    'H': parameters[0],
+    'A': parameters[1],
+    'x0': parameters[2],
+    'sigma': parameters[3],
+    'Reduced Chi-squared': chi_squared_per_dof,
+    'min_val': min_val,
+    'max_val': max_val,
+    'kernel_size': kernel_size,
+    'mode': mode,
+    'method': method,
+}
+
+new_row_df = pd.DataFrame([new_row])
+
+# Use concat to add the new row to the DataFrame
+st.session_state.fit_results_df = pd.concat([st.session_state.fit_results_df, new_row_df], ignore_index=True)
+
+st.dataframe(st.session_state.fit_results_df)
