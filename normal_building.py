@@ -169,7 +169,10 @@ if uploaded_file is not None:
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     image = cv2.imdecode(file_bytes, 1)
 else:
-    image = load_image_from_url(default_image_url)
+    # Convert the uploaded file to an OpenCV image
+    im_path = 'normal_building.py'
+    file_bytes = np.asarray(bytearray(im_path.read()), dtype=np.uint8)
+    image = cv2.imdecode(file_bytes, 1)
                                 
 # Process the image immediately after any input changes
 original_rgb, gray, blurred, edges, contours_rgb, contours = process_image(image, min_val, max_val, mode, method, kernel_size)
