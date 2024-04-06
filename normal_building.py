@@ -126,6 +126,10 @@ def load_image_from_url(image_url):
     else:
         raise Exception("Failed to retrieve the image. HTTP Status Code: {}".format(response.status_code))
 
+# Function to convert DataFrame to CSV format
+def convert_df_to_csv(df):
+    return df.to_csv(index=False).encode('utf-8')
+
 # The raw URL of the default image hosted on GitHub
 default_image_url = 'https://raw.githubusercontent.com/victormurcia/Normal-Building/main/building.jpg'
 
@@ -228,5 +232,15 @@ new_row_df = pd.DataFrame([new_row])
 
 # Use concat to add the new row to the DataFrame
 st.session_state.fit_results_df = pd.concat([st.session_state.fit_results_df, new_row_df], ignore_index=True)
+
+csv = convert_df_to_csv(st.session_state.fit_results_df)
+
+# Create the download button
+st.download_button(
+    label="Download Results as CSV",
+    data=csv,
+    file_name='fit_results.csv',
+    mime='text/csv',
+)
 
 st.dataframe(st.session_state.fit_results_df)
