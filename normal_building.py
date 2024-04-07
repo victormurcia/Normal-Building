@@ -129,6 +129,17 @@ def load_image_from_url(image_url):
 def convert_df_to_csv(df):
     return df.to_csv(index=False).encode('utf-8')
 
+# Function to plot Reduced Chi-squared values
+def plot_reduced_chi_squared(df):
+    plt.figure(figsize=(10, 4))
+    plt.plot(df['Reduced Chi-squared'], marker='o', linestyle='-')
+    plt.xlabel('Measurement Number')
+    plt.ylabel('Reduced Chi-squared')
+    plt.title('Reduced Chi-squared Tracker')
+    plt.grid(True)
+    plt.tight_layout()
+    return plt
+
 # The raw URL of the default image hosted on GitHub
 default_image_url = 'https://raw.githubusercontent.com/victormurcia/Normal-Building/main/building.jpg'
 
@@ -234,8 +245,16 @@ st.session_state.fit_results_df = pd.concat([st.session_state.fit_results_df, ne
 
 csv = convert_df_to_csv(st.session_state.fit_results_df)
 
-st.dataframe(st.session_state.fit_results_df)
+# Layout: DataFrame and Plot side by side
+col1, col2 = st.columns([2, 3])  # Adjust the ratio to your liking
 
+with col1:
+    st.dataframe(st.session_state.fit_results_df)
+
+with col2:
+    fig = plot_reduced_chi_squared(st.session_state.fit_results_df)
+    st.pyplot(fig)
+    
 # Create the download button
 st.download_button(
     label="Download Results as CSV",
